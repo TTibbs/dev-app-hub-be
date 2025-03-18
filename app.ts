@@ -14,7 +14,9 @@ import pool from "./db/connection";
 app.use(cors());
 app.use(express.json());
 
-app.use("/api", apiRouter);
+app.get("/", (req, res) => {
+  res.status(200).json({ msg: "Welcome to the API!" });
+});
 
 app.get("/health", async (req: Request, res: Response) => {
   const startTime = process.hrtime();
@@ -82,10 +84,7 @@ app.get("/health", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.status(200).json({ msg: "Welcome to the API!" });
-});
-
+app.use("/api", apiRouter);
 app.use("/api/*", inputErrorHandler);
 app.use(psqlErrorHandler);
 app.use(customErrorHandler);
