@@ -48,6 +48,8 @@ export type User = {
   avg_rating?: number | null;
   created_at: Date;
   updated_at: Date;
+  app_ids?: number[] | null;
+  password: string;
 };
 
 export type PoolConfig = {

@@ -22,8 +22,6 @@ app.get("/health", async (req: Request, res: Response) => {
   const startTime = process.hrtime();
   const timestamp = new Date().toISOString();
 
-  console.log(`[${timestamp}] Health check requested from ${req.ip}`);
-
   try {
     // Test database connection
     const dbResult = await pool.query("SELECT 1 as connection_test");
@@ -60,10 +58,6 @@ app.get("/health", async (req: Request, res: Response) => {
       },
       responseTime: `${responseTimeMs}ms`,
     };
-
-    console.log(
-      `[${timestamp}] Health check successful: Database connected=${dbConnected}`
-    );
     res.status(200).json(healthData);
   } catch (error) {
     console.error(`[${timestamp}] Health check failed:`, error);
