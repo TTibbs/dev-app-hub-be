@@ -8,5 +8,49 @@
       "status": "ok",
       "timestamp": "2021-01-01T00:00:00.000Z"
     }
+  },
+  "GET /api/users": {
+    "description": "serves up a json representation of all the users",
+    "exampleResponse": {
+      "users": [
+        {
+          "id": 1,
+          "username": "testuser",
+          "name": "Test User",
+          "email": "testuser@example.com",
+          "role": "user",
+          "avg_rating": 4.5,
+          "created_at": "2021-01-01T00:00:00.000Z",
+          "updated_at": "2021-01-01T00:00:00.000Z",
+          "app_ids": [1, 2, 3],
+          "comment_ids": [1, 2, 3]
+        }
+      ]
+    }
+  },
+  "GET /api/users/:user_id": {
+    "description": "serves up a json representation of a user by user_id",
+    "exampleResponse": {
+      "user": {
+        "id": 1,
+        "username": "testuser",
+        "name": "Test User",
+        "email": "testuser@example.com",
+        "role": "user",
+        "avg_rating": 4.5,
+        "created_at": "2021-01-01T00:00:00.000Z",
+        "updated_at": "2021-01-01T00:00:00.000Z",
+        "app_ids": [1, 2, 3],
+        "comment_ids": [1, 2, 3]
+      }
+    },
+    "errorResponses": {
+      "400": {
+        "description": "user_id is not a number"
+      },
+      "404": {
+        "description": "user not found"
+      }
+    }
   }
 }

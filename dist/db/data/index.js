@@ -41,13 +41,13 @@ const devData = __importStar(require("./dev-data"));
 const testData = __importStar(require("./test-data"));
 // Get data based on the environment
 const getData = () => {
-    const env = process.env.NODE_ENV || "test"; // Default to test environment if none specified
-    console.log(`Seeding database with ${env} data`);
-    if (env === "development" || env === "production") {
+    const env = process.env.NODE_ENV || "development";
+    if (env === "test") {
+        return testData;
+    }
+    else {
         return devData;
     }
-    // Default to test data
-    return testData;
 };
 exports.getData = getData;
 // Export types for ease of use

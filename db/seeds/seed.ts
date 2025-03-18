@@ -23,6 +23,7 @@ const seed = async (data: {
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         role VARCHAR(255) NOT NULL check (role in ('developer', 'user')),
+        password VARCHAR(255) NOT NULL,
         avg_rating DECIMAL(3, 2),
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -84,12 +85,13 @@ const seed = async (data: {
     `);
 
     const insertUsersQueryString = format(
-      `INSERT INTO users (username, name, email, role, avg_rating, created_at, updated_at) VALUES %L`,
+      `INSERT INTO users (username, name, email, role, password, avg_rating, created_at, updated_at) VALUES %L`,
       data.users.map((user) => [
         user.username,
         user.name,
         user.email,
         user.role,
+        user.password,
         user.avg_rating,
         user.created_at,
         user.updated_at,
