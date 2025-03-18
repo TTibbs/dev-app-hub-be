@@ -135,7 +135,6 @@ const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
             comment.updated_at,
         ]));
         yield connection_1.default.query(insertCommentsQueryString);
-        console.log("Database seeded successfully");
     }
     catch (err) {
         yield connection_1.default.query("ROLLBACK");
