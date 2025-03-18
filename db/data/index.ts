@@ -3,25 +3,22 @@ import * as testData from "./test-data";
 import { User, App, Rating, Comment, Issue } from "../types";
 
 export interface DataSet {
-  users: User[];
-  apps: App[];
-  ratings: Rating[];
-  comments: Comment[];
-  issues: Issue[];
+  userData: User[];
+  appsData: App[];
+  ratingsData: Rating[];
+  commentsData: Comment[];
+  issuesData: Issue[];
 }
 
 // Get data based on the environment
 export const getData = (): DataSet => {
-  const env = process.env.NODE_ENV || "test"; // Default to test environment if none specified
+  const env = process.env.NODE_ENV || "development";
 
-  console.log(`Seeding database with ${env} data`);
-
-  if (env === "development" || env === "production") {
-    return devData as DataSet;
+  if (env === "test") {
+    return testData as unknown as DataSet;
+  } else {
+    return devData as unknown as DataSet;
   }
-
-  // Default to test data
-  return testData as DataSet;
 };
 
 // Export types for ease of use

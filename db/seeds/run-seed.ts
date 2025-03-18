@@ -1,9 +1,18 @@
-import { getData } from "../data";
+import * as devData from "../data/dev-data";
 import seed from "./seed";
 import db from "../connection";
 
 const runSeed = () => {
-  return seed(getData()).then(() => db.end());
+  return seed({
+    users: devData.userData,
+    apps: devData.appsData,
+    ratings: devData.ratingsData,
+    comments: devData.commentsData,
+    issues: devData.issuesData,
+  }).then(() => {
+    console.log("Development database seeded successfully");
+    return db.end();
+  });
 };
 
 runSeed();

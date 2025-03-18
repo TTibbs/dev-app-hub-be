@@ -1,21 +1,33 @@
 {
-  "name": "feedback-app-be",
+  "name": "dev-app-hub-be",
   "author": "tibbs",
   "version": "1.0.0",
-  "description": "Express app",
+  "description": "All in one app hub for developers to get feedback on their apps and help streamline their development process",
   "main": "./dist/listener.js",
   "repository": {
     "type": "git",
-    "url": "git+test.git"
+    "url": "git+https://github.com/TTibbs/dev-app-hub-be.git"
   },
   "bugs": {
-    "url": "test/issues"
+    "url": "https://github.com/TTibbs/dev-app-hub-be/issues"
   },
-  "homepage": "test#readme",
-  "keywords": [],
+  "homepage": "https://github.com/TTibbs/dev-app-hub-be#readme",
+  "keywords": [
+    "app",
+    "hub",
+    "feedback",
+    "development",
+    "testing",
+    "express",
+    "nodejs",
+    "typescript",
+    "postgresql",
+    "supabase"
+  ],
   "license": "MIT",
   "scripts": {
     "start": "node ./dist/listener.js",
+    "start:dev": "ts-node listener.ts",
     "setup-dbs": "psql -f ./db/setup.sql",
     "seed": "node ./dist/db/seeds/run-seed.js",
     "seed:test": "NODE_ENV=test npm run seed",
@@ -43,12 +55,16 @@
     "@types/pg": "^8.11.10",
     "@types/pg-format": "^1.0.5",
     "@types/supertest": "^2.0.16",
+    "jest-extended": "^4.0.2",
+    "jest-sorted": "^1.0.15",
     "supertest": "^7.0.0",
     "ts-jest": "^29.x.x",
     "ts-node": "^10.x.x",
     "typescript": "^5.x.x"
   },
   "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
     "setupFilesAfterEnv": [
       "jest-extended/all",
       "jest-sorted"
