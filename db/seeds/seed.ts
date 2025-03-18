@@ -154,8 +154,6 @@ const seed = async (data: {
       ])
     );
     await db.query(insertCommentsQueryString);
-
-    console.log("Database seeded successfully");
   } catch (err) {
     await db.query("ROLLBACK");
     console.error("Error seeding database:", err);

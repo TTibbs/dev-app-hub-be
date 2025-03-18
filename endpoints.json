@@ -2,13 +2,11 @@
   "GET /api": {
     "description": "serves up a json representation of all the available endpoints of the api"
   },
-  "GET /api/users": {
-    "description": "Returns an array of users with the username, name and avatar url",
-    "exampleResponse": [
-      {
-        "username": "10x engineer",
-        "name": "Theo"
-      }
-    ]
+  "GET /health": {
+    "description": "serves up a json representation of the health of the api",
+    "exampleResponse": {
+      "status": "ok",
+      "timestamp": "2021-01-01T00:00:00.000Z"
+    }
   }
 }
