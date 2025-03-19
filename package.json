@@ -26,6 +26,7 @@
   ],
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
     "start": "node ./dist/listener.js",
     "start:dev": "ts-node listener.ts",
     "setup-dbs": "psql -f ./db/setup.sql",
@@ -33,7 +34,6 @@
     "seed:test": "node ./dist/db/seeds/run-seed-test.js",
     "seed:dev": "NODE_ENV=development npm run seed",
     "seed:prod": "NODE_ENV=production npm run seed",
-    "build": "tsc -p tsconfig.json && cp .env.* ./dist/",
     "test": "jest --verbose",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
