@@ -1,4 +1,5 @@
-const usersRouter = require("express").Router();
+import { Router } from "express";
+const usersRouter = Router();
 import {
   getUsers,
   getUserById,

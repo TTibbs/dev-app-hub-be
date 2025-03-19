@@ -3,8 +3,39 @@ import { User } from "../db/types";
 
 export const selectUsers = async (): Promise<User[]> => {
   const result = await db.query(`
-    SELECT * FROM users
-    ORDER BY created_at DESC
+    SELECT
+      u.id,
+      u.username,
+      u.name,
+      u.email,
+      u.role,
+      CASE 
+        WHEN u.role = 'developer' THEN (
+          SELECT AVG(a.avg_rating::float8)
+          FROM apps a
+          WHERE a.developer_id = u.id
+        )
+        ELSE u.avg_rating::float8
+      END AS avg_rating,
+      u.created_at,
+      u.updated_at,
+      COALESCE(array_remove(array_agg(DISTINCT r.id), NULL), '{}') AS rating_ids,
+      COALESCE(array_remove(array_agg(DISTINCT i.id), NULL), '{}') AS issue_ids,
+      COALESCE(array_remove(array_agg(DISTINCT c.id), NULL), '{}') AS comment_ids
+    FROM users u
+    LEFT JOIN ratings r ON r.author_id = u.id
+    LEFT JOIN issues i ON i.author_id = u.id
+    LEFT JOIN comments c ON c.author_id = u.id
+    GROUP BY
+      u.id,
+      u.username,
+      u.name,
+      u.email,
+      u.role,
+      u.avg_rating,
+      u.created_at,
+      u.updated_at
+    ORDER BY u.created_at DESC;
   `);
   return result.rows as User[];
 };
@@ -12,14 +43,44 @@ export const selectUsers = async (): Promise<User[]> => {
 export const selectUserById = async (user_id: number): Promise<User> => {
   const result = await db.query(
     `
-    SELECT users.id, users.username, users.name, users.email, users.role, users.avg_rating, users.created_at, users.updated_at,
-    COALESCE(JSON_AGG(apps.id) FILTER (WHERE apps.id IS NOT NULL), '[]') AS app_ids,
-    COALESCE(JSON_AGG(comments.id) FILTER (WHERE comments.id IS NOT NULL), '[]') AS comment_ids
-    FROM users
-    LEFT JOIN apps ON users.id = apps.developer_id
-    LEFT JOIN comments ON users.id = comments.author_id
-    WHERE users.id = $1
-    GROUP BY users.id
+    SELECT
+      u.id,
+      u.username,
+      u.name,
+      u.email,
+      u.role,
+      CASE 
+        WHEN u.role = 'developer' THEN (
+          SELECT AVG(a.avg_rating::float8)
+          FROM apps a
+          WHERE a.developer_id = u.id
+        )
+        ELSE u.avg_rating::float8
+      END AS avg_rating,
+      u.created_at,
+      u.updated_at,
+      (
+        SELECT COALESCE(array_remove(array_agg(DISTINCT a.id), NULL), '{}')
+        FROM apps a
+        WHERE a.developer_id = u.id
+      ) AS app_ids,
+      (
+        SELECT COALESCE(array_remove(array_agg(DISTINCT r.id), NULL), '{}')
+        FROM ratings r
+        WHERE r.author_id = u.id
+      ) AS rating_ids,
+      (
+        SELECT COALESCE(array_remove(array_agg(DISTINCT i.id), NULL), '{}')
+        FROM issues i
+        WHERE i.author_id = u.id
+      ) AS issue_ids,
+      (
+        SELECT COALESCE(array_remove(array_agg(DISTINCT c.id), NULL), '{}')
+        FROM comments c
+        WHERE c.author_id = u.id
+      ) AS comment_ids
+    FROM users u
+    WHERE u.id = $1
   `,
     [user_id]
   );
@@ -38,7 +99,15 @@ export const insertUser = async (
   avg_rating: number
 ): Promise<User> => {
   const result = await db.query(
-    `INSERT INTO users (username, name, email, role, password, avg_rating) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+    `INSERT INTO users (username, name, email, role, password, avg_rating) VALUES ($1, $2, $3, $4, $5, $6::numeric) RETURNING 
+      id, 
+      username, 
+      name, 
+      email, 
+      role, 
+      avg_rating::float8 AS avg_rating, 
+      created_at, 
+      updated_at`,
     [username, name, email, role, password, avg_rating]
   );
   return result.rows[0] as User;
@@ -78,7 +147,7 @@ export const patchUser = async (
     values.push(password);
   }
   if (avg_rating !== undefined) {
-    updates.push(`avg_rating = $${valueIndex++}`);
+    updates.push(`avg_rating = ($${valueIndex++})::numeric`);
     values.push(avg_rating);
   }
 
@@ -92,7 +161,15 @@ export const patchUser = async (
     UPDATE users
     SET ${updates.join(", ")}
     WHERE id = $${valueIndex}
-    RETURNING *
+    RETURNING 
+      id, 
+      username, 
+      name, 
+      email, 
+      role, 
+      avg_rating::float8 AS avg_rating, 
+      created_at, 
+      updated_at
   `;
 
   const result = await db.query(query, values);

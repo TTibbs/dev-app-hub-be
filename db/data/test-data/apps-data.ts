@@ -2,9 +2,10 @@ import { App } from "../../types";
 
 export const apps: App[] = [
   {
-    name: "App 1",
-    description: "App 1 description",
-    app_url: "https://app1.com",
+    name: "Prompt Wallet",
+    description: "A wallet for your prompts",
+    category: "AI",
+    app_url: "https://promptwallet.com",
     app_img_url: "https://picsum.photos/200/300",
     avg_rating: 4.5,
     developer_id: 1, // Alice is the developer
@@ -12,9 +13,10 @@ export const apps: App[] = [
     updated_at: new Date("2025-01-05T09:00:00Z"),
   },
   {
-    name: "App 2",
-    description: "App 2 description",
-    app_url: "https://app2.com",
+    name: "No Code Email Templates",
+    description: "Drag and drop email templates",
+    category: "Marketing",
+    app_url: "https://nocodeemailtemplates.com",
     app_img_url: "https://picsum.photos/200/300",
     avg_rating: 4.0,
     developer_id: 3, // Charlie is the developer
