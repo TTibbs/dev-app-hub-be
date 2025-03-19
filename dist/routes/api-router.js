@@ -6,9 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const apiRouter = (0, express_1.Router)();
 const users_router_1 = __importDefault(require("./users-router"));
+const apps_router_1 = __importDefault(require("./apps-router"));
 const endpoints_json_1 = __importDefault(require("../endpoints.json"));
 apiRouter.get("/", (req, res) => {
     res.status(200).send({ endpoints: endpoints_json_1.default });
 });
 apiRouter.use("/users", users_router_1.default);
+apiRouter.use("/apps", apps_router_1.default);
 exports.default = apiRouter;
