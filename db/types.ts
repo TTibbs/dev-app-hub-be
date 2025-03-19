@@ -1,6 +1,7 @@
 export type App = {
   name: string;
   description: string;
+  category: string;
   app_url: string;
   app_img_url: string;
   avg_rating: number;
@@ -16,6 +17,13 @@ export type Comment = {
   app_id?: number | null;
   rating_id?: number | null;
   issue_id?: number | null;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type Category = {
+  name: string;
+  description: string;
   created_at: Date;
   updated_at: Date;
 };

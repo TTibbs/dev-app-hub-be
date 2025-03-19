@@ -9,6 +9,7 @@ const runSeed = () => {
     ratings: devData.ratingsData,
     comments: devData.commentsData,
     issues: devData.issuesData,
+    categories: devData.categoriesData,
   }).then(() => {
     console.log("Development database seeded successfully");
     return db.end();

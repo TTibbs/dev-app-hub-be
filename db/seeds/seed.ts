@@ -1,6 +1,6 @@
 import format from "pg-format";
 import db from "../connection";
-import { User, App, Rating, Comment, Issue } from "../types";
+import { User, App, Rating, Comment, Issue, Category } from "../types";
 
 const seed = async (data: {
   users: User[];
@@ -8,13 +8,15 @@ const seed = async (data: {
   ratings: Rating[];
   comments: Comment[];
   issues: Issue[];
+  categories: Category[];
 }) => {
   try {
-    await db.query("DROP TABLE IF EXISTS comments;");
-    await db.query("DROP TABLE IF EXISTS ratings;");
-    await db.query("DROP TABLE IF EXISTS issues;");
-    await db.query("DROP TABLE IF EXISTS apps;");
-    await db.query("DROP TABLE IF EXISTS users;");
+    await db.query("DROP TABLE IF EXISTS comments CASCADE;");
+    await db.query("DROP TABLE IF EXISTS ratings CASCADE;");
+    await db.query("DROP TABLE IF EXISTS issues CASCADE;");
+    await db.query("DROP TABLE IF EXISTS apps CASCADE;");
+    await db.query("DROP TABLE IF EXISTS categories CASCADE;");
+    await db.query("DROP TABLE IF EXISTS users CASCADE;");
 
     await db.query(`
       CREATE TABLE users (
@@ -25,8 +27,18 @@ const seed = async (data: {
         role VARCHAR(255) NOT NULL check (role in ('developer', 'user')),
         password VARCHAR(255) NOT NULL,
         avg_rating DECIMAL(3, 2),
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    await db.query(`
+      CREATE TABLE categories (
+        id SERIAL PRIMARY KEY UNIQUE,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
 
@@ -35,12 +47,13 @@ const seed = async (data: {
         id SERIAL PRIMARY KEY UNIQUE,
         name VARCHAR(255) NOT NULL UNIQUE,
         description TEXT NOT NULL,
+        category VARCHAR(255) NOT NULL REFERENCES categories(name) ON DELETE CASCADE,
         app_url VARCHAR(255) NOT NULL,
         app_img_url VARCHAR(255) NOT NULL,
-        avg_rating DECIMAL(3, 2) NOT NULL,
+        avg_rating DECIMAL(3, 2) DEFAULT NULL,
         developer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
 
@@ -52,8 +65,8 @@ const seed = async (data: {
         status VARCHAR(255) NOT NULL check (status in ('open', 'in progress', 'closed')),
         author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
         app_id INTEGER NOT NULL REFERENCES apps(id) ON DELETE CASCADE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
 
@@ -65,8 +78,8 @@ const seed = async (data: {
         author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
         app_id INTEGER REFERENCES apps(id) ON DELETE CASCADE,
         developer_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
 
@@ -79,8 +92,8 @@ const seed = async (data: {
         app_id INTEGER REFERENCES apps(id) ON DELETE CASCADE,
         rating_id INTEGER REFERENCES ratings(id) ON DELETE CASCADE,
         issue_id INTEGER REFERENCES issues(id) ON DELETE CASCADE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
 
@@ -99,11 +112,23 @@ const seed = async (data: {
     );
     await db.query(insertUsersQueryString);
 
+    const insertCategoriesQueryString = format(
+      `INSERT INTO categories (name, description, created_at, updated_at) VALUES %L`,
+      data.categories.map((category) => [
+        category.name,
+        category.description,
+        category.created_at,
+        category.updated_at,
+      ])
+    );
+    await db.query(insertCategoriesQueryString);
+
     const insertAppsQueryString = format(
-      `INSERT INTO apps (name, description, app_url, app_img_url, avg_rating, developer_id, created_at, updated_at) VALUES %L`,
+      `INSERT INTO apps (name, description, category, app_url, app_img_url, avg_rating, developer_id, created_at, updated_at) VALUES %L`,
       data.apps.map((app) => [
         app.name,
         app.description,
+        app.category,
         app.app_url,
         app.app_img_url,
         app.avg_rating,
