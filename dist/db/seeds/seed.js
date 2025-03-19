@@ -16,11 +16,12 @@ const pg_format_1 = __importDefault(require("pg-format"));
 const connection_1 = __importDefault(require("../connection"));
 const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield connection_1.default.query("DROP TABLE IF EXISTS comments;");
-        yield connection_1.default.query("DROP TABLE IF EXISTS ratings;");
-        yield connection_1.default.query("DROP TABLE IF EXISTS issues;");
-        yield connection_1.default.query("DROP TABLE IF EXISTS apps;");
-        yield connection_1.default.query("DROP TABLE IF EXISTS users;");
+        yield connection_1.default.query("DROP TABLE IF EXISTS comments CASCADE;");
+        yield connection_1.default.query("DROP TABLE IF EXISTS ratings CASCADE;");
+        yield connection_1.default.query("DROP TABLE IF EXISTS issues CASCADE;");
+        yield connection_1.default.query("DROP TABLE IF EXISTS apps CASCADE;");
+        yield connection_1.default.query("DROP TABLE IF EXISTS categories CASCADE;");
+        yield connection_1.default.query("DROP TABLE IF EXISTS users CASCADE;");
         yield connection_1.default.query(`
       CREATE TABLE users (
         id SERIAL PRIMARY KEY UNIQUE,
@@ -30,8 +31,17 @@ const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
         role VARCHAR(255) NOT NULL check (role in ('developer', 'user')),
         password VARCHAR(255) NOT NULL,
         avg_rating DECIMAL(3, 2),
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `);
+        yield connection_1.default.query(`
+      CREATE TABLE categories (
+        id SERIAL PRIMARY KEY UNIQUE,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
         yield connection_1.default.query(`
@@ -39,12 +49,13 @@ const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
         id SERIAL PRIMARY KEY UNIQUE,
         name VARCHAR(255) NOT NULL UNIQUE,
         description TEXT NOT NULL,
+        category VARCHAR(255) NOT NULL REFERENCES categories(name) ON DELETE CASCADE,
         app_url VARCHAR(255) NOT NULL,
         app_img_url VARCHAR(255) NOT NULL,
-        avg_rating DECIMAL(3, 2) NOT NULL,
+        avg_rating DECIMAL(3, 2) DEFAULT NULL,
         developer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
         yield connection_1.default.query(`
@@ -55,8 +66,8 @@ const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
         status VARCHAR(255) NOT NULL check (status in ('open', 'in progress', 'closed')),
         author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
         app_id INTEGER NOT NULL REFERENCES apps(id) ON DELETE CASCADE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
         yield connection_1.default.query(`
@@ -67,8 +78,8 @@ const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
         author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
         app_id INTEGER REFERENCES apps(id) ON DELETE CASCADE,
         developer_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
         yield connection_1.default.query(`
@@ -80,8 +91,8 @@ const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
         app_id INTEGER REFERENCES apps(id) ON DELETE CASCADE,
         rating_id INTEGER REFERENCES ratings(id) ON DELETE CASCADE,
         issue_id INTEGER REFERENCES issues(id) ON DELETE CASCADE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
         const insertUsersQueryString = (0, pg_format_1.default)(`INSERT INTO users (username, name, email, role, password, avg_rating, created_at, updated_at) VALUES %L`, data.users.map((user) => [
@@ -95,9 +106,17 @@ const seed = (data) => __awaiter(void 0, void 0, void 0, function* () {
             user.updated_at,
         ]));
         yield connection_1.default.query(insertUsersQueryString);
-        const insertAppsQueryString = (0, pg_format_1.default)(`INSERT INTO apps (name, description, app_url, app_img_url, avg_rating, developer_id, created_at, updated_at) VALUES %L`, data.apps.map((app) => [
+        const insertCategoriesQueryString = (0, pg_format_1.default)(`INSERT INTO categories (name, description, created_at, updated_at) VALUES %L`, data.categories.map((category) => [
+            category.name,
+            category.description,
+            category.created_at,
+            category.updated_at,
+        ]));
+        yield connection_1.default.query(insertCategoriesQueryString);
+        const insertAppsQueryString = (0, pg_format_1.default)(`INSERT INTO apps (name, description, category, app_url, app_img_url, avg_rating, developer_id, created_at, updated_at) VALUES %L`, data.apps.map((app) => [
             app.name,
             app.description,
+            app.category,
             app.app_url,
             app.app_img_url,
             app.avg_rating,

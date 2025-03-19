@@ -4,7 +4,7 @@ export const apps: App[] = [
   {
     name: "Prompt Wallet",
     description: "A wallet for your prompts",
-    category: "AI Tools",
+    category: "AI",
     app_url: "https://promptwallet.com",
     app_img_url: "https://picsum.photos/200/300",
     avg_rating: 4.5,
@@ -15,7 +15,7 @@ export const apps: App[] = [
   {
     name: "No Code Email Templates",
     description: "Drag and drop email templates",
-    category: "Email Marketing",
+    category: "Marketing",
     app_url: "https://nocodeemailtemplates.com",
     app_img_url: "https://picsum.photos/200/300",
     avg_rating: 4.0,

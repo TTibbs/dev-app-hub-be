@@ -1,13 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.issuesData = exports.commentsData = exports.ratingsData = exports.appsData = exports.userData = void 0;
+exports.categoriesData = exports.issuesData = exports.commentsData = exports.ratingsData = exports.appsData = exports.userData = void 0;
 const users_data_1 = require("./users-data");
 const apps_data_1 = require("./apps-data");
 const ratings_data_1 = require("./ratings-data");
 const comments_data_1 = require("./comments-data");
 const issues_data_1 = require("./issues-data");
+const categories_data_1 = require("./categories-data");
 exports.userData = users_data_1.users;
 exports.appsData = apps_data_1.apps;
 exports.ratingsData = ratings_data_1.ratings;
 exports.commentsData = comments_data_1.comments;
 exports.issuesData = issues_data_1.issues;
+exports.categoriesData = categories_data_1.categories;

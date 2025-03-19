@@ -30,7 +30,7 @@
     "start:dev": "ts-node listener.ts",
     "setup-dbs": "psql -f ./db/setup.sql",
     "seed": "node ./dist/db/seeds/run-seed.js",
-    "seed:test": "NODE_ENV=test npm run seed",
+    "seed:test": "node ./dist/db/seeds/run-seed-test.js",
     "seed:dev": "NODE_ENV=development npm run seed",
     "seed:prod": "NODE_ENV=production npm run seed",
     "build": "tsc -p tsconfig.json && cp .env.* ./dist/",
