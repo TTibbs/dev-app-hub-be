@@ -147,10 +147,20 @@ export const updateApp = async (
       return res.status(400).send({ msg: "No fields to update" });
     }
 
-    // First get the existing app to check ownership
-    const existingApp = (await selectAppById(Number(app_id))) as App & {
-      developer_id: number;
-    };
+    let existingApp;
+    try {
+      existingApp = (await selectAppById(Number(app_id))) as App & {
+        developer_id: number;
+      };
+      if (!existingApp) {
+        return res.status(404).send({ msg: "App not found" });
+      }
+    } catch (error: any) {
+      if (error.status === 404) {
+        return res.status(404).send({ msg: "App not found" });
+      }
+      throw error;
+    }
 
     // If developer_id is provided in the request
     if (developer_id !== undefined) {

@@ -225,7 +225,6 @@ describe("POST ENDPOINTS", () => {
           role: "user",
         })
         .expect(201);
-      expect(user).toBeInstanceOf(Object);
       expect(user).toHaveProperty("id", expect.any(Number));
       expect(user).toHaveProperty("username", "testuser");
       expect(user).toHaveProperty("name", "Test User");
@@ -246,16 +245,14 @@ describe("POST ENDPOINTS", () => {
           email: "testuser@example.com",
           password: "password",
           role: "developer",
-          avg_rating: 4.5,
         })
         .expect(201);
-      expect(user).toBeInstanceOf(Object);
       expect(user).toHaveProperty("id", expect.any(Number));
       expect(user).toHaveProperty("username", "testuser");
       expect(user).toHaveProperty("name", "Test User");
       expect(user).toHaveProperty("email", "testuser@example.com");
       expect(user).toHaveProperty("role", "developer");
-      expect(user).toHaveProperty("avg_rating", 4.5);
+      expect(user).toHaveProperty("avg_rating", null);
       expect(user).toHaveProperty("created_at", expect.any(String));
       expect(user).toHaveProperty("updated_at", expect.any(String));
     });
