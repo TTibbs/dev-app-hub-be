@@ -4,7 +4,7 @@ import db from "../db/connection";
 import seed from "../db/seeds/seed";
 import * as testData from "../db/data/test-data";
 import endpoints from "../endpoints.json";
-import { App, User } from "../db/types";
+import { App, User, Comment } from "../db/types";
 
 beforeEach(() =>
   seed({
@@ -103,14 +103,16 @@ describe("GET ENDPOINTS", () => {
         expect(user).toHaveProperty("updated_at", expect.any(String));
       });
       test("responds with 400 status and error message if user_id is not a number", async () => {
-        const { body } = await request(app)
-          .get("/api/users/not-a-number")
-          .expect(400);
-        expect(body.msg).toBe("Invalid user_id");
+        const {
+          body: { msg },
+        } = await request(app).get("/api/users/not-a-number").expect(400);
+        expect(msg).toBe("Invalid user_id");
       });
       test("responds with 404 status and error message if user does not exist", async () => {
-        const { body } = await request(app).get("/api/users/999").expect(404);
-        expect(body.msg).toBe("User not found");
+        const {
+          body: { msg },
+        } = await request(app).get("/api/users/999").expect(404);
+        expect(msg).toBe("User not found");
       });
     });
   });
@@ -162,14 +164,16 @@ describe("GET ENDPOINTS", () => {
         expect(singleApp).toHaveProperty("comment_ids", expect.any(Array));
       });
       test("responds with 400 status and error message if app_id is not a number", async () => {
-        const { body } = await request(app)
-          .get("/api/apps/not-a-number")
-          .expect(400);
-        expect(body.msg).toBe("Invalid app ID");
+        const {
+          body: { msg },
+        } = await request(app).get("/api/apps/not-a-number").expect(400);
+        expect(msg).toBe("Invalid app ID");
       });
       test("responds with 404 status and error message if app does not exist", async () => {
-        const { body } = await request(app).get("/api/apps/999").expect(404);
-        expect(body.msg).toBe("App not found");
+        const {
+          body: { msg },
+        } = await request(app).get("/api/apps/999").expect(404);
+        expect(msg).toBe("App not found");
       });
     });
 
@@ -195,16 +199,63 @@ describe("GET ENDPOINTS", () => {
         expect(comments).toEqual([]);
       });
       test("Should return 400 status and error message if app_id is not a number", async () => {
-        const { body } = await request(app)
+        const {
+          body: { msg },
+        } = await request(app)
           .get("/api/apps/not-a-number/comments")
           .expect(400);
-        expect(body.msg).toBe("Invalid app ID");
+        expect(msg).toBe("Invalid app ID");
       });
       test("Should return 404 status and error message if app does not exist", async () => {
-        const { body } = await request(app)
-          .get("/api/apps/999/comments")
-          .expect(404);
-        expect(body.msg).toBe("App not found");
+        const {
+          body: { msg },
+        } = await request(app).get("/api/apps/999/comments").expect(404);
+        expect(msg).toBe("App not found");
+      });
+    });
+  });
+
+  describe("GET /api/comments", () => {
+    test("Should return an array of comments", async () => {
+      const {
+        body: { comments },
+      } = await request(app).get("/api/comments").expect(200);
+      comments.map((comment: Comment) => {
+        expect(comment).toHaveProperty("id", expect.any(Number));
+        expect(comment).toHaveProperty("body", expect.any(String));
+        expect(comment).toHaveProperty("votes", expect.any(Number));
+        expect(comment).toHaveProperty("author_id", expect.any(Number));
+        expect(comment).toHaveProperty("created_at", expect.any(String));
+        expect(comment).toHaveProperty("updated_at", expect.any(String));
+      });
+    });
+
+    describe("GET /api/comments/:comment_id", () => {
+      test("Should return a single comment", async () => {
+        const {
+          body: { comment },
+        } = await request(app).get("/api/comments/1").expect(200);
+        expect(comment).toHaveProperty("id", expect.any(Number));
+        expect(comment).toHaveProperty("body", expect.any(String));
+        expect(comment).toHaveProperty("votes", expect.any(Number));
+        expect(comment).toHaveProperty("author_id", expect.any(Number));
+        expect(comment).toHaveProperty("app_id", expect.any(Number));
+        expect(comment.rating_id).toBeNull();
+        expect(comment.issue_id).toBeNull();
+        expect(comment).toHaveProperty("created_at", expect.any(String));
+        expect(comment).toHaveProperty("updated_at", expect.any(String));
+      });
+      test("Should return 400 status and error message if comment_id is not a number", async () => {
+        const {
+          body: { msg },
+        } = await request(app).get("/api/comments/not-a-number").expect(400);
+        expect(msg).toBe("Invalid comment ID");
+      });
+      test("Should return 404 status and error message if comment does not exist", async () => {
+        const {
+          body: { msg },
+        } = await request(app).get("/api/comments/999").expect(404);
+        expect(msg).toBe("Comment not found");
       });
     });
   });
@@ -257,14 +308,15 @@ describe("POST ENDPOINTS", () => {
       expect(user).toHaveProperty("updated_at", expect.any(String));
     });
     test("should return 400 status and error message if required fields are missing", async () => {
-      const { body } = await request(app)
-        .post("/api/users")
-        .send({})
-        .expect(400);
-      expect(body.msg).toBe("Missing required fields");
+      const {
+        body: { msg },
+      } = await request(app).post("/api/users").send({}).expect(400);
+      expect(msg).toBe("Missing required fields");
     });
     test("should return 400 status and error message if password is missing", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/users")
         .send({
           username: "testuser",
@@ -273,10 +325,12 @@ describe("POST ENDPOINTS", () => {
           role: "user",
         })
         .expect(400);
-      expect(body.msg).toBe("Missing required fields");
+      expect(msg).toBe("Missing required fields");
     });
     test("should return 400 status and error message if username is missing", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/users")
         .send({
           name: "Test User",
@@ -285,10 +339,12 @@ describe("POST ENDPOINTS", () => {
           password: "password",
         })
         .expect(400);
-      expect(body.msg).toBe("Missing required fields");
+      expect(msg).toBe("Missing required fields");
     });
     test("should return 400 status and error message if name is missing", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/users")
         .send({
           username: "testuser",
@@ -297,10 +353,12 @@ describe("POST ENDPOINTS", () => {
           password: "password",
         })
         .expect(400);
-      expect(body.msg).toBe("Missing required fields");
+      expect(msg).toBe("Missing required fields");
     });
     test("should return 400 status and error message if email is missing", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/users")
         .send({
           username: "testuser",
@@ -309,10 +367,12 @@ describe("POST ENDPOINTS", () => {
           password: "password",
         })
         .expect(400);
-      expect(body.msg).toBe("Missing required fields");
+      expect(msg).toBe("Missing required fields");
     });
     test("should return 400 status and error message if role is missing", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/users")
         .send({
           username: "testuser",
@@ -321,7 +381,7 @@ describe("POST ENDPOINTS", () => {
           password: "password",
         })
         .expect(400);
-      expect(body.msg).toBe("Missing required fields");
+      expect(msg).toBe("Missing required fields");
     });
   });
 
@@ -354,14 +414,15 @@ describe("POST ENDPOINTS", () => {
       expect(newApp).toHaveProperty("comment_ids", expect.any(Array));
     });
     test("should return 400 status and error message if required fields are missing", async () => {
-      const { body } = await request(app)
-        .post("/api/apps")
-        .send({})
-        .expect(400);
-      expect(body.msg).toBe("Missing required fields");
+      const {
+        body: { msg },
+      } = await request(app).post("/api/apps").send({}).expect(400);
+      expect(msg).toBe("Missing required fields");
     });
     test("should return 400 status and error message if developer_id is not a number", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/apps")
         .send({
           name: "Test App",
@@ -373,10 +434,12 @@ describe("POST ENDPOINTS", () => {
           developer_id: "not-a-number",
         })
         .expect(400);
-      expect(body.msg).toBe("Invalid developer_id");
+      expect(msg).toBe("Invalid developer_id");
     });
     test("should return 400 status and error message if category does not exist", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/apps")
         .send({
           name: "Test App",
@@ -388,10 +451,12 @@ describe("POST ENDPOINTS", () => {
           developer_id: 1,
         })
         .expect(400);
-      expect(body.msg).toBe("Category does not exist");
+      expect(msg).toBe("Category does not exist");
     });
     test("should return 403 status when non-developer user tries to create an app", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/apps")
         .send({
           name: "Test App",
@@ -403,12 +468,14 @@ describe("POST ENDPOINTS", () => {
           developer_id: 2, // Bob has 'user' role, not 'developer'
         })
         .expect(403);
-      expect(body.msg).toBe(
+      expect(msg).toBe(
         "Forbidden: Only users with developer role can create apps"
       );
     });
     test("should return 404 status when developer_id does not exist", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .post("/api/apps")
         .send({
           name: "Test App",
@@ -420,7 +487,50 @@ describe("POST ENDPOINTS", () => {
           developer_id: 999, // Non-existent user ID
         })
         .expect(404);
-      expect(body.msg).toBe("Developer not found");
+      expect(msg).toBe("Developer not found");
+    });
+  });
+
+  describe("POST /api/comments", () => {
+    test("Should create a new comment", async () => {
+      const newComment = {
+        body: "Test Comment",
+        votes: 0,
+        author_id: 2,
+        app_id: 2,
+        rating_id: null,
+        issue_id: null,
+      };
+      const {
+        body: { comment },
+      } = await request(app).post("/api/comments").send(newComment).expect(201);
+      expect(comment).toHaveProperty("body", "Test Comment");
+      expect(comment).toHaveProperty("votes", 0);
+      expect(comment).toHaveProperty("author_id", 2);
+      expect(comment).toHaveProperty("app_id", 2);
+      expect(comment).toHaveProperty("rating_id", null);
+      expect(comment).toHaveProperty("issue_id", null);
+    });
+    test("Should return 400 status and error message if required fields are missing", async () => {
+      const {
+        body: { msg },
+      } = await request(app).post("/api/comments").send({}).expect(400);
+      expect(msg).toBe("Missing required fields: body, votes, or author_id");
+    });
+    test("Should return 400 status and error message if comment is not associated with any target table", async () => {
+      const {
+        body: { msg },
+      } = await request(app)
+        .post("/api/comments")
+        .send({
+          body: "Test Comment",
+          votes: 0,
+          author_id: 2,
+        })
+        .expect(400);
+      expect(msg).toBe(
+        "A comment must be associated with exactly one of: app_id, rating_id, or issue_id"
+      );
     });
   });
 });
@@ -601,23 +711,26 @@ describe("PATCH ENDPOINTS", () => {
       expect(result).toHaveProperty("developer_id", 1);
     });
     test("should return 400 status and error message if app_id is not a number", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .patch("/api/apps/not-a-number")
         .send({
           name: "Updated App",
         })
         .expect(400);
-      expect(body.msg).toBe("Invalid app ID");
+      expect(msg).toBe("Invalid app ID");
     });
     test("should return 400 status and error message if no fields to update", async () => {
-      const { body } = await request(app)
-        .patch("/api/apps/1")
-        .send({})
-        .expect(400);
-      expect(body.msg).toBe("No fields to update");
+      const {
+        body: { msg },
+      } = await request(app).patch("/api/apps/1").send({}).expect(400);
+      expect(msg).toBe("No fields to update");
     });
     test("should return 403 status when trying to assign app to different developer", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .patch("/api/apps/1")
         .send({
           name: "Updated App",
@@ -628,36 +741,99 @@ describe("PATCH ENDPOINTS", () => {
           developer_id: 3, // Charlie is a developer but not the owner of this app
         })
         .expect(403);
-      expect(body.msg).toBe("Forbidden: This app does not belong to you.");
+      expect(msg).toBe("Forbidden: This app does not belong to you.");
     });
     test("should return 403 status when trying to assign app to non-developer user", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .patch("/api/apps/1")
         .send({
           developer_id: 2, // Bob has 'user' role, not 'developer'
         })
         .expect(403);
-      expect(body.msg).toBe(
+      expect(msg).toBe(
         "Forbidden: Only users with developer role can be assigned to apps"
       );
     });
     test("should return 404 status when developer_id does not exist", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .patch("/api/apps/1")
         .send({
           developer_id: 999, // Non-existent user ID
         })
         .expect(404);
-      expect(body.msg).toBe("Developer not found");
+      expect(msg).toBe("Developer not found");
     });
     test("should return 404 status and error message if app does not exist", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .patch("/api/apps/999")
         .send({
           name: "Updated App",
         })
         .expect(404);
-      expect(body.msg).toBe("App not found");
+      expect(msg).toBe("App not found");
+    });
+  });
+
+  describe("PATCH /api/comments/:comment_id", () => {
+    test("responds with 200 status and updated comment", async () => {
+      const updatedComment = {
+        body: "Updated Comment",
+        votes: 1,
+        user_id: 1,
+      };
+      const {
+        body: { comment },
+      } = await request(app)
+        .patch("/api/comments/1")
+        .send(updatedComment)
+        .expect(200);
+      expect(comment).toHaveProperty("id", 1);
+      expect(comment).toHaveProperty("body", "Updated Comment");
+      expect(comment).toHaveProperty("votes", 1);
+    });
+    test("should return 400 status and error message if comment_id is not a number", async () => {
+      const {
+        body: { msg },
+      } = await request(app)
+        .patch("/api/comments/not-a-number")
+        .send({ body: "Updated Comment", votes: 1, user_id: 1 })
+        .expect(400);
+      expect(msg).toBe("Invalid comment ID");
+    });
+    test("should return 400 status and error message if no fields to update", async () => {
+      const {
+        body: { msg },
+      } = await request(app).patch("/api/comments/1").send({}).expect(400);
+      expect(msg).toBe("Missing required fields: body, votes");
+    });
+    test("Should return 403 status and error message if user is not the author of the comment", async () => {
+      const updatedComment = {
+        body: "Updated Comment",
+        votes: 1,
+        user_id: 3,
+      };
+      const {
+        body: { msg },
+      } = await request(app)
+        .patch("/api/comments/1")
+        .send(updatedComment)
+        .expect(403);
+      expect(msg).toBe("Forbidden: You can only update your own comments");
+    });
+    test("should return 404 status and error message if comment does not exist", async () => {
+      const {
+        body: { msg },
+      } = await request(app)
+        .patch("/api/comments/999")
+        .send({ body: "Updated Comment", votes: 1, user_id: 1 })
+        .expect(404);
+      expect(msg).toBe("Comment not found");
     });
   });
 });
@@ -665,28 +841,70 @@ describe("PATCH ENDPOINTS", () => {
 describe("DELETE ENDPOINTS", () => {
   describe("DELETE /api/apps/:app_id", () => {
     test("responds with 200 status and deleted app", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .delete("/api/apps/1")
         .send({ developer_id: 1 })
         .expect(200);
-      expect(body.msg).toBe("App deleted successfully");
+      expect(msg).toBe("App deleted successfully");
     });
     test("should return 400 status and error message if app_id is not a number", async () => {
-      const { body } = await request(app)
-        .delete("/api/apps/not-a-number")
-        .expect(400);
-      expect(body.msg).toBe("Invalid app ID");
+      const {
+        body: { msg },
+      } = await request(app).delete("/api/apps/not-a-number").expect(400);
+      expect(msg).toBe("Invalid app ID");
     });
     test("should return 403 status when a developer tries to delete another developer's app", async () => {
-      const { body } = await request(app)
+      const {
+        body: { msg },
+      } = await request(app)
         .delete("/api/apps/1")
         .send({ developer_id: 3 })
         .expect(403);
-      expect(body.msg).toBe("Forbidden: You can only delete your own apps");
+      expect(msg).toBe("Forbidden: You can only delete your own apps");
     });
     test("should return 404 status and error message if app does not exist", async () => {
-      const { body } = await request(app).delete("/api/apps/999").expect(404);
-      expect(body.msg).toBe("App not found");
+      const {
+        body: { msg },
+      } = await request(app).delete("/api/apps/999").expect(404);
+      expect(msg).toBe("App not found");
+    });
+  });
+
+  describe("DELETE /api/comments/:comment_id", () => {
+    test("responds with 204 status when a user deletes their own comment", async () => {
+      await request(app)
+        .delete("/api/comments/1")
+        .send({ user_id: 1 })
+        .expect(204);
+    });
+    test("should return 400 status and error message if comment_id is not a number", async () => {
+      const {
+        body: { msg },
+      } = await request(app)
+        .delete("/api/comments/not-a-number")
+        .send({ user_id: 1 })
+        .expect(400);
+      expect(msg).toBe("Invalid comment ID");
+    });
+    test("should return 403 status when a user tries to delete another user's comment", async () => {
+      const {
+        body: { msg },
+      } = await request(app)
+        .delete("/api/comments/1")
+        .send({ user_id: 3 })
+        .expect(403);
+      expect(msg).toBe("Forbidden: You can only delete your own comments");
+    });
+    test("should return 404 status and error message if comment does not exist", async () => {
+      const {
+        body: { msg },
+      } = await request(app)
+        .delete("/api/comments/999")
+        .send({ user_id: 1 })
+        .expect(404);
+      expect(msg).toBe("Comment not found");
     });
   });
 });
